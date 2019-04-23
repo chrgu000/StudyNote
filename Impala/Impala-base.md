@@ -1,7 +1,7 @@
 
 # Impala 和 Hive的关系
 
-![enter description here](./attachments/impala-base001(impala和hive的关系).xls)
+![enter description here](./images/impala-base001(impala和hive的关系).xls)
 
 # Impala的优点和缺点
 
@@ -18,7 +18,7 @@
 
 # Impala的架构
 
-![enter description here](./attachments/impala-base002(impala的架构).xls)
+![enter description here](./images/impala-base002(impala的架构).xls)
 
 
 # Impala的安装
@@ -33,4 +33,8 @@
 
 ## 重新加载数据库中的所有表
 
+//加载数据库中所有的表的元数据
 INVALIDATE METADATA;
+
+//刷新表 USER_ACTION_LOG 的元数据
+INVALIDATE METADATA USER_ACTION_LOG;

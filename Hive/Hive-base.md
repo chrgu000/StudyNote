@@ -429,6 +429,11 @@ left join
 (select uid from weibouid where part='baimingdan')b
 on a.uid = b.uid)c where c.buid is null;
 
+## Hive 删除表数据
+
+truncate table 表名; 
+
+**truncate用于删除所有的行，这个行为在hive元存储删除数据是不可逆的**
 
 # Hive自带函数
 
