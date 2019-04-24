@@ -38,3 +38,8 @@ mysql> use hive;
 mysql> show tables;
 ```
 
+## 2、查看创建表的sql语句
+
+``` 
+show create table user;
+```
