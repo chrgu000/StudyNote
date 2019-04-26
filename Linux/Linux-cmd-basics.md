@@ -477,3 +477,17 @@ root:x:0:
 -rwxrwxrwx. 1 root root 115 12月  4 20:55 orders.txt
 ```
 
+# tail命令
+
+## 查看文件最后1000行
+
+tail -n 1000 CaihuiBI.log
+
+## 监控某个文件
+
+tail -f CaihuiBI.log
+
+# 后台运行java程序
+
+//nohup 表示后台运行这个程序
+nohup java -jar  -Xms500m -Xmn500m -Xmx2g /home/colourlife/jars/caihuibi-0.0.1-SNAPSHOT.jar
