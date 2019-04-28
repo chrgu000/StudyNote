@@ -178,3 +178,50 @@ hdfs dfs -put -f date_dim.csv /user/hive/warehouse/mydb.db/date_dim/
 
 //执行预加载命令
 [root@cdh1 shell]# ./date_dim_generate.sh 2000-01-01 2020-12-31
+
+ ## 装载定期维度表
+ 
+```
+insert into product_dim
+select row_number() over (order by t1.product_code) + t2.sk_max,
+	product_code, 
+	product_name, 
+	product_category,
+	1, 
+	'2016-03-01',
+	'2200-01-01'
+from rds.product t1
+	cross join (select coalesce(max(product_sk),0) sk_max from product_dim) t2;
+```
+
+``` 
+set hivevar:cur_date = current_date();
+set hivevar:pre_date = date_add(${hivevar:cur_date},-1);
+set hivevar:max_date = cast('2200-01-01' as date);
+
+update customer_dim
+	set expiry_date = ${hivevar:pre_date}
+where customer_dim.customer_sk in
+(
+	select
+		a.customer_sk
+	from
+	(
+		select
+			customer_sk,
+			customer_number,
+			customer_street_address
+		from
+			customer_dim 
+		where
+			expiry_date = ${hivevar:max_date}
+		) a 
+	  left join
+	 rds.customer b 
+	 on a.customer_number = b.customer_number
+	 where
+	 	b.customer_number is null 
+		or 
+		a.customer_street_address <> b.customer_street_address
+)
+```
