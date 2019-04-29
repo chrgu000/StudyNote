@@ -353,7 +353,24 @@ from user_manager_platform_test.czy_business_ods_transaction_child t1
 
 ```
 
-
+select
+    t1.transaction_child_sk,
+    t1.version
+from
+(
+select 
+    row_number() over( PARTITION BY c1.colour_sn ORDER BY c1.version) RN,
+    c1.transaction_child_sk,
+    c1.colour_sn,
+    c1.version
+from czy_business_dwd_transaction_child c1
+) t1
+inner join czy_business_ods_transaction_child t2
+on
+( t1.colour_sn = t2.colour_sn
+  and from_unixtime(t2.time_entry,'yyyy-MM-dd') = from_unixtime(unix_timestamp(days_add(now(),-1)),'yyyy-MM-dd')
+)
+where t1.RN = 1;
 ```
 
 
