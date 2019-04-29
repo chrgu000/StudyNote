@@ -449,7 +449,8 @@ stored as textfile;
 TRUNCATE user_manager_platform_test.user_agent_log_dwd;
 
 insert into user_manager_platform_test.user_agent_log_dwd
-select row_number() over (order by t1.user_id) + t2.sk_max,
+select 
+   row_number() over (order by t1.user_id) + t2.sk_max,
    t1.user_id,
    from_unixtime(t1.time_create),
    t1.ip_create,
@@ -471,6 +472,82 @@ from user_manager_platform_test.user_agent_log_ods t1
 
 ``` 
 
+
+-- 设置已经过期的列
+update user_agent_log_dwd
+set
+    expiry_date = '2100-01-01'
+where
+user_agent_log_dwd.user_agent_log_sk in
+(   select
+    a.user_agent_log_sk
+    from
+    (
+        select
+            user_agent_log_sk,user_id
+        from user_agent_log_dwd 
+        where  expiry_date = '2200-01-01'
+    ) a 
+    inner join
+    user_agent_log_ods b 
+    on a.user_id = b.user_id
+    -- where
+   -- b.time_entry = ${hivevar:max_date}
+);
+
+select * from user_agent_log_dwd;
+
+处理customer_street_addresses列上scd2的新增行
+insert into
+customer_dim
+select
+row_number()
+over (order by
+t1.customer_number) + t2.sk_max,
+t1.customer_number,
+t1.customer_name,
+t1.customer_street_address,
+t1.customer_zip_code,
+t1.customer_city,
+t1.customer_state,
+t1.version,
+t1.effective_date,
+t1.expiry_date
+from
+(
+select
+t2.customer_number customer_number,
+t2.customer_name customer_name,
+t2.customer_street_address customer_street_address,
+t2.customer_zip_code,
+t2.customer_city,
+t2.customer_state,
+t1.version + 1 version,
+${hivevar:pre_date} effective_date,
+${hivevar:max_date} expiry_date
+from
+customer_dim t1
+inner join
+rds.customer t2
+on
+t1.customer_number = t2.customer_number
+and
+t1.expiry_date = ${hivevar:pre_date}
+left join
+customer_dim t3
+on
+t1.customer_number = t3.customer_number
+and
+t3.expiry_date = ${hivevar:max_date}
+where
+t1.customer_street_address <>
+t2.customer_street_address and
+t3.customer_sk is null
+) t1
+cross join
+(select coalesce(max
+(customer_sk),0) sk_max from
+customer_dim) t2;
 ```
 
 ## 建表语句（DWS）
