@@ -122,16 +122,44 @@ GMV：的概念是什么？
 
 有哪些标签？
 
-源IP：210.75.13.8
-目的IP：120.77.63.54
-库名：colourlife_user_service
-用户名：bigdata
-密码：V6f1_s2N&70%Lv^>
 
 user_manager_platform_test 测试
 user_manager_platform_pro 正式
 
+
+
+## mysql 源头库
+
+**用户管理**
+mysql -h120.77.63.54 -ubigdata -pV6f1_s2N&70%Lv^>        {数据库名：colourlife_user_service}
+
+
+**家访管理服务**
+源IP：210.75.13.8（210.75.8.34）
+目的IP：120.77.63.54
+库名：colourlife_visit_service（家访管理服务）
+用户名：bigdata
+密码：V6f1_s2N&70%Lv^>
+
+**彩生活商户对帐平台**
+源IP：210.75.13.8（210.75.8.34）
+目的IP：120.77.63.54
+库名：czy_business_platform（彩生活商户对帐平台）
+用户名：bigdata
+密码：V6f1_s2N&70%Lv^>
+
 mysql -h120.77.63.54 -ubigdata -pV6f1_s2N&70%Lv^>
+
+
+**档案系统**
+源IP：210.75.13.8（210.75.8.34）
+目的IP：119.29.226.227
+库名：cl_hr（档案系统）
+用户名：bigdata
+密码：V6f1_s2N&70%Lv^>
+
+mysql -h119.29.226.227 -ubigdata -pV6f1_s2N&70%Lv^>
+
 
 ## 建表语句(ODS)
 
@@ -628,17 +656,8 @@ on r.datestr = a.datestr
 
 ```
 
+# 彩生活对账平台
 
-数据源                         
-
-1 2 3 
-1 3 4
-
-HIVE
-1 1 2 3
-
-1 1 3 3   //先处理SCD1
-2 1  3 4
 
 
 
