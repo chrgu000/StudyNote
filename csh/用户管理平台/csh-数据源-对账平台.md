@@ -1,70 +1,10 @@
 
-豆沙绿数值：#C7EDCC
 
-vscode 设置背景色
-C:\software\vscode\Microsoft VS Code Insiders\resources\app\extensions\theme-quietlight\themes\quietlight-color-theme.json
+彩生活商户对帐平台数据(czy_business_platform)
 
-设置此项的值为豆沙绿："editor.background": "#C7EDCC",
+# transaction(订单交易流水表)
 
-
-# 命名标准
-
-源数据库标识_仓库层级_原数据库表名
-
-# 数据类型选择标准
-
-## 时间
-ODS 层: 时间使用biglog(因为原数据库都是这样的)；                                                                       其它层: 时间都使用string;
-
-## 整型数字
-统一使用bigint
-
-## 浮点型数字
-统一使用decimal
-
-# mysql 数据源
-
-## 用户管理数据库
-
-数据库名：colourlife_user_service
-
-mysql -h120.77.63.54 -ubigdata -pV6f1_s2N&70%Lv^>
-
-
-## 家访管理服务数据库
-
-源IP：210.75.13.8（210.75.8.34）
-目的IP：120.77.63.54
-库名：colourlife_visit_service（家访管理服务）
-用户名：bigdata
-密码：V6f1_s2N&70%Lv^>
-
-## 彩生活商户对帐平台数据库
-
-源IP：210.75.13.8（210.75.8.34）
-目的IP：120.77.63.54
-库名：czy_business_platform（彩生活商户对帐平台）
-用户名：bigdata
-密码：V6f1_s2N&70%Lv^>
-
-mysql -h120.77.63.54 -ubigdata -pV6f1_s2N&70%Lv^>
-
-
-## 档案系统数据库
-
-源IP：210.75.13.8（210.75.8.34）
-目的IP：119.29.226.227
-库名：cl_hr（档案系统）
-用户名：bigdata
-密码：V6f1_s2N&70%Lv^>
-
-mysql -h119.29.226.227 -ubigdata -pV6f1_s2N&70%Lv^>
-
-# 彩生活商户对帐平台数据(czy_business_platform)
-
-## transaction(订单交易流水表)
-
-### ODS 
+## ODS 
 
 ```
 
@@ -111,7 +51,7 @@ lines terminated by '\n'
 stored as textfile;
 ```
 
-### DWD
+## DWD
 
 ```
 drop table czy_business_dwd_transaction;
@@ -153,7 +93,7 @@ lines terminated by '\n'
 stored as textfile;
 ```
 
-### 第一次装载SQL
+## 第一次装载SQL
 
 ```
 TRUNCATE user_manager_platform_test.czy_business_dwd_transaction;
@@ -194,7 +134,7 @@ from user_manager_platform_test.czy_business_ods_transaction t1
                user_manager_platform_test.czy_business_dwd_transaction) t2;
 ```
 
-### 定期每天装载SQL
+## 定期每天装载SQL
 
 ```
 --这张表不会有更新,所以我们直接装载就可以
@@ -242,9 +182,9 @@ cross join (select coalesce(max(transaction_sk),0) sk_max from
 
 ```
 
-## transaction_child(交易流水子表)
+# transaction_child(交易流水子表)
 
-### ODS
+## ODS
 
 ```
 
@@ -282,7 +222,7 @@ lines terminated by '\n'
 stored as textfile;
 ```
 
-### DWD
+## DWD
 
 ```
 drop table czy_business_dwd_transaction_child;
@@ -316,7 +256,7 @@ lines terminated by '\n'
 stored as textfile;
 ```
 
-### 第一次装载SQL
+## 第一次装载SQL
 
 ```
 TRUNCATE user_manager_platform_test.czy_business_dwd_transaction_child;
@@ -349,13 +289,37 @@ from user_manager_platform_test.czy_business_ods_transaction_child t1
                user_manager_platform_test.czy_business_dwd_transaction_child) t2;
 ```
 
-### 定期每天装载SQL
+## 定期每天装载SQL
 
 ```
+-- 处理更新的数据
+/**
+czy_business_ods_transaction_child
 
+*/
+insert into user_manager_platform_test.czy_business_dwd_transaction_child
 select
-    t1.transaction_child_sk,
-    t1.version
+    row_number() over (order by t2.colour_sn) + t3.sk_max,
+    t2.colour_sn,
+    t2.colour_trade_no,
+    t2.trade_state,
+    t2.payment_uuid,
+    t2.discount,
+    t2.notify_msg,
+    t2.notify_num,
+    from_unixtime(t2.time_pay),
+    t2.callback_results,
+    t2.actual_pay_amount,
+    from_unixtime(t2.time_update),
+    t2.real_total_fee,
+    t2.business_uuid,
+    t2.mobile,
+    t2.split_state,
+    t2.arrival_fee,
+    t2.service_fee,
+    t2.is_deleted,
+    from_unixtime(t2.time_entry,'yyyy-MM-dd'),
+    t1.version + 1
 from
 (
 select 
@@ -370,7 +334,50 @@ on
 ( t1.colour_sn = t2.colour_sn
   and from_unixtime(t2.time_entry,'yyyy-MM-dd') = from_unixtime(unix_timestamp(days_add(now(),-1)),'yyyy-MM-dd')
 )
+cross join (select coalesce(max(transaction_child_sk),0) sk_max from 
+               user_manager_platform_test.czy_business_dwd_transaction_child) t3;
 where t1.RN = 1;
+
+
+-- 处理新增的数据
+insert into user_manager_platform_test.czy_business_dwd_transaction_child
+select 
+   row_number() over (order by t1.colour_sn) + t2.sk_max,
+   t1.colour_sn,
+   t1.colour_trade_no,
+   t1.trade_state,
+   t1.payment_uuid,
+   t1.discount,
+   t1.notify_msg,
+   t1.notify_num,
+   from_unixtime(t1.time_pay),
+   t1.callback_results,
+   t1.actual_pay_amount,
+   from_unixtime(t1.time_update),
+   t1.real_total_fee,
+   t1.business_uuid,
+   t1.mobile,
+   t1.split_state,
+   t1.arrival_fee,
+   t1.service_fee,
+   t1.is_deleted,
+   from_unixtime(t1.time_entry,'yyyy-MM-dd'),
+   1
+from
+(
+select
+ods.*
+from
+czy_business_ods_transaction_child ods
+left join
+czy_business_dwd_transaction_child dwd
+on ods.colour_sn = dwd.colour_sn
+where dwd.colour_sn = null
+) t1
+cross join (select coalesce(max(transaction_child_sk),0) sk_max from 
+               user_manager_platform_test.czy_business_dwd_transaction_child) t2;
+
+
 ```
 
 
