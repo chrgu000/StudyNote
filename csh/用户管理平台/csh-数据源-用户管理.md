@@ -176,6 +176,8 @@ stored as textfile;
 
 # user_community(用户地址表)
 
+一个小区通常配一个客户经理，客户经理和小区挂钩，不针对个人；
+
 ## ODS
 
 ``` 

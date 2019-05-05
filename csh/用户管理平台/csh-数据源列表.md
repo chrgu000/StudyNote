@@ -65,3 +65,14 @@ mysql -h120.77.63.54 -ubigdata -pV6f1_s2N&70%Lv^>
 密码：V6f1_s2N&70%Lv^>
 
 mysql -h119.29.226.227 -ubigdata -pV6f1_s2N&70%Lv^>
+
+## 集中管控平台
+
+源IP：210.75.13.8（210.75.8.34）
+目的IP：120.77.63.54
+库名：colourlife_operation_system（集中管控平台）
+用户名：bigdata
+密码：V6f1_s2N&70%Lv^>
+
+mysql -h120.77.63.54 -ubigdata -pV6f1_s2N&70%Lv^>
+
