@@ -13,7 +13,7 @@ C:\software\vscode\Microsoft VS Code Insiders\resources\app\extensions\theme-qui
 # 数据类型选择标准
 
 ## 时间
-ODS 层: 时间使用biglog(因为原数据库都是这样的)；                                             其它层: 时间都使用string;
+ODS 层: 时间使用biglog(因为原数据库都是这样的)；                                             其它其它层: 时间都使用string;
 
 ## 整型数字
 统一使用bigint
@@ -75,4 +75,15 @@ mysql -h119.29.226.227 -ubigdata -pV6f1_s2N&70%Lv^>
 密码：V6f1_s2N&70%Lv^>
 
 mysql -h120.77.63.54 -ubigdata -pV6f1_s2N&70%Lv^>
+
+## 彩生活rms应用层
+
+源IP：210.75.13.8（210.75.8.34）
+目的IP：193.112.86.246
+端口：3310
+库名：rms（彩生活rms应用层）
+用户名：bigdata
+密码：V6f1_s2N&70%Lv^>
+
+mysql -h193.112.86.246 -P3310 -ubigdata -pV6f1_s2N&70%Lv^>
 

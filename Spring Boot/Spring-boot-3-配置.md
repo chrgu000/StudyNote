@@ -488,3 +488,159 @@ spring:
 ## 通过命令行激活profile
 
 java -jar SpringBoot-1.0-SNAPSHOT.jar com.dongk.springboot.MyAppTest.java --spring.profiles.active=dev
+
+# 配置文件加载位置
+
+Springboot启动的时候会扫描以下位置的application.properties、application.yml；
+
+```
+## Project(IDEA)下的config文件夹
+–file:./config/
+## Project(IDEA)的根目录
+–file:./
+## Module(IDEA)下的resources目录中的config文件夹
+–classpath:/config/
+## Module(IDEA)下的resources目录
+–classpath:/
+```
+
+优先级由高到底，高优先级的配置会覆盖低优先级的配置；
+
+项目打包好以后，我们可以使用命令行参数的形式，指定配置文件；命令行中指定的配置文件和默认配置文件共同起作用形成互补配置(命令行中指定配置文件的优先级高于jar包中的配置文件)；
+
+java -jar SpringBoot-1.0-SNAPSHOT.jar --spring.config.location=D:/application.properties
+
+# 自动配置原理
+
+## 1、启动的时候加载主配置类
+
+SpringBoot启动的时候加载主配置类，开启了自动配置功能(@EnableAutoConfiguration)；
+
+## 2、@EnableAutoConfiguration加载各种自动配置类
+
+@EnableAutoConfiguration利用EnableAutoConfigurationImportSelector给容器中导入各种自动配置类。
+
+扫描所有jar包类路径下 META-INF/spring.factories，将里面配置的所有EnableAutoConfiguration的值加入到了容器中。
+
+META-INF/spring.factories部分内容如下：
+
+```
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration,\
+org.springframework.boot.autoconfigure.aop.AopAutoConfiguration,\
+org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,\
+org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration,\
+org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration,\
+org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration,\
+org.springframework.boot.autoconfigure.cloud.CloudAutoConfiguration,\
+org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration,\
+```
+
+## 3、自动配置类进行自动配置功能
+
+下面以HttpEncodingAutoConfiguration（Http编码自动配置）为例。
+
+```
+//表示这是一个配置类；
+@Configuration
+
+//启动指定类的ConfigurationProperties功能；
+//将配置文件中对应的值和HttpEncodingProperties绑定起来；
+//并把HttpEncodingProperties加入到ioc容器中；
+@EnableConfigurationProperties(HttpProperties.class)
+
+//@Conditional注解(Spring底层注解)；如果满足指定的条件，整个配置类里面的配置就会生效；   
+//判断当前应用是否是web应用；如果是，当前配置类生效；
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+
+//判断当前项目有没有这个类CharacterEncodingFilter；
+//SpringMVC中进行乱码解决的过滤器；
+@ConditionalOnClass(CharacterEncodingFilter.class)
+
+//判断配置文件中是否存在某个配置  spring.http.encoding.enabled；
+//matchIfMissing = true : 如果不存在，判断也是成立的
+@ConditionalOnProperty(prefix = "spring.http.encoding", value = "enabled", matchIfMissing = true)
+public class HttpEncodingAutoConfiguration {
+```
+
+1）、根据当前不同的条件判断，决定这个配置类是否生效；
+2）、这个组件的某些值需要从properties中获取；
+
+## 4、关联配置文件中的属性
+
+1）、所有在配置文件中能配置的属性都是在xxxxProperties类中封装着；
+2）、配置文件能配置什么可以参照某个功能对应的属性类；
+
+```
+//从配置文件中获取指定的值和bean的属性进行绑定
+@ConfigurationProperties(prefix = "spring.http.encoding")  
+public class HttpEncodingProperties {
+
+   public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
+
+```
+
+# @Conditional派生注解
+
+@Conditional是Spring的原生注解，SpringBoot派生了很多注解，如下：
+
+| @Conditional扩展注解                | 作用（判断是否满足当前指定条件）               |
+| ------------------------------- | ------------------------------ |
+| @ConditionalOnJava              | 系统的java版本是否符合要求                |
+| @ConditionalOnBean              | 容器中存在指定Bean；                   |
+| @ConditionalOnMissingBean       | 容器中不存在指定Bean；                  |
+| @ConditionalOnExpression        | 满足SpEL表达式指定                    |
+| @ConditionalOnClass             | 系统中有指定的类                       |
+| @ConditionalOnMissingClass      | 系统中没有指定的类                      |
+| @ConditionalOnSingleCandidate   | 容器中只有一个指定的Bean，或者这个Bean是首选Bean |
+| @ConditionalOnProperty          | 系统中指定的属性是否有指定的值                |
+| @ConditionalOnResource          | 类路径下是否存在指定资源文件                 |
+| @ConditionalOnWebApplication    | 当前是web环境                       |
+| @ConditionalOnNotWebApplication | 当前不是web环境                      |
+| @ConditionalOnJndi              | JNDI存在指定项                      |
+
+**自动配置类必须在一定的条件下才能生效；**
+
+# 自动配置报告打印
+
+在配置文件中配置如下内容：
+
+application.yml
+```
+debug: true
+```
+
+就会在控制台打印启用的自动配置类、没启用的自动配置类；
+
+启用的自动配置类
+```
+Positive matches:
+-----------------
+
+   CodecsAutoConfiguration matched:
+      - @ConditionalOnClass found required class 'org.springframework.http.codec.CodecConfigurer' (OnClassCondition)
+
+   CodecsAutoConfiguration.JacksonCodecConfiguration matched:
+      - @ConditionalOnClass found required class 'com.fasterxml.jackson.databind.ObjectMapper' (OnClassCondition)
+```
+
+没有启用的自动配置类
+```
+Negative matches:
+-----------------
+
+   ActiveMQAutoConfiguration:
+      Did not match:
+         - @ConditionalOnClass did not find required class 'javax.jms.ConnectionFactory' (OnClassCondition)
+
+   AopAutoConfiguration:
+      Did not match:
+         - @ConditionalOnClass did not find required class 'org.aspectj.lang.annotation.Aspect' (OnClassCondition)
+```
+
+
+
+
+
+
+

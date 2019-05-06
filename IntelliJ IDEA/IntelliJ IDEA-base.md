@@ -100,6 +100,10 @@ Ctrl + Alt + ->
 
 Alt + Enter
 
+## 知道类名查找类
+
+Ctrl + Shift + Alt + N
+
 
 # 设置运行参数
 
