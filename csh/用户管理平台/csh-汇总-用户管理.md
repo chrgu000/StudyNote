@@ -43,6 +43,24 @@ colourlife_operation_ods_user_manager_build     //community_uuid(小区uuid)
 
 ### SQL
 
+
+### 返回样例
+
+```
+{
+    mobilePhone 手机号 : colourlife_user_dwd_user.mobile,
+    userType 用户类型 : ??,
+    nickName 昵称 : colourlife_user_dwd_user_info.nick_name,
+    name 名字 : colourlife_user_dwd_user_info.name,
+    community 小区 : colourlife_user_dwd_user_community.community_name,
+    registeredTime 注册时间 : colourlife_user_dwd_user.time_create,
+    communityUuid 小区uuid : colourlife_user_dwd_user_community.community_uuid,
+    registeredType 注册类型 : colourlife_user_dwd_user_info.register_type,
+    bindManager 绑定客户经理 : colourlife_operation_dwd_user_manager_build.user_id,
+    label 标签 : ??,
+}
+```
+
 ## 统计信息
 
 
