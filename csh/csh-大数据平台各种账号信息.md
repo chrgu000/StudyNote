@@ -90,3 +90,10 @@ VPN地址：https://vpn.cnfantasia.com
 密码：hyn12345
 
 链接工具：EasyConnect
+
+
+# 花样有数账号信息
+
+地址：http://bdv.cnfantasia.com:8081/#/worksheet
+账号：jiangwj
+密码：Hyn12345

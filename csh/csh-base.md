@@ -89,9 +89,3 @@ topic：caihui_bi_user_visit_log_test
 nohup java -jar  -Xms500m -Xmn500m -Xmx2g /home/colourlife/jars/caihuibi-0.0.1-SNAPSHOT.jar
 
 
-# 彩生活对账平台
-
-
-
-
-

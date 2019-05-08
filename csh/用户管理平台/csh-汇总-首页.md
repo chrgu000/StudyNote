@@ -75,5 +75,4 @@ full join
 activeinfo a
 on r.datestr = a.datestr
 
-
 ```
