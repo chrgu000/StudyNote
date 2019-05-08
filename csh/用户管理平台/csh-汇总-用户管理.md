@@ -43,6 +43,10 @@ colourlife_operation_ods_user_manager_build     //community_uuid(小区uuid)
 
 ### SQL
 
+```
+
+```
+
 
 ### 返回样例
 
