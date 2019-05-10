@@ -37,17 +37,18 @@ from
 ( select '1' as id, count(1) as total  from  czysp_user_ods_user)  register
 left join
 (
- select  '1' as id, count(1) as total from czysp_user_ods_user_agent_log
-  group by device_update
+ select '1' as id, count(1) as total from(
+        select  device_update as total from czysp_user_ods_user_agent_log group by device_update
+        ) t
+  
 ) install
 on register.id = install.id
 left join
 (
-  select '1' as id,  count(1) as total 
-  from czy_single__ods_xcws_login_log group by account
+  select '1' as id,  count(1) as total from czy_single_ods_xcws_login_log group by account
 ) login
-
 on install.id = login.id;
+
 ```
 
 
@@ -100,4 +101,37 @@ from
 ) t;
 
 INVALIDATE METADATA view_summ_branch_register;
+```
+
+# 各模块访问人数
+
+# SQL
+
+```
+DROP VIEW  view_summ_branch_module;
+
+Create View IF NOT EXISTS view_summ_branch_module as 
+
+select
+ app.appname,
+ open.count
+from
+(
+  select '巡逻防控' as appname,app.table_pre from czysp_application_ods_application app where app.name regexp '(巡逻防控)'
+  union all
+  select '积分商城' as appname,app.table_pre from czysp_application_ods_application app where app.name regexp '(商城)'
+  union all
+  select '民众呼声' as appname,app.table_pre from czysp_application_ods_application app where app.name regexp '(投诉报修)'
+  union all
+  select '违法举报' as appname,app.table_pre from czysp_application_ods_application app where app.name regexp '(勋章)'
+) app
+left join 
+(select
+ open.table_pre,
+ count( distinct open.user_uuid) as count
+from
+czysp_application_ods_application_open open
+group by open.table_pre
+) open
+on app.table_pre = open.table_pre;
 ```
