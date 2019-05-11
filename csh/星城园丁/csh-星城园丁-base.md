@@ -22,7 +22,8 @@ czy_single_service
 czysp_application_service
 czysp_transaction_service
 xcws_xsjb_service
-xcws_xlfk_service
+
+### xcws_xlfk_service(巡逻防控数据)
 
 ## 组织架构
 

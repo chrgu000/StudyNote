@@ -112,6 +112,7 @@ create table if not exists czysp_user_dwd_user_agent_log(
    ip_create bigint COMMENT '创建ip',
    agent_create string COMMENT '创建设备信息',
    time_update string COMMENT '更新时间',
+   time_update_sk bigint COMMENT '日期维度代理键',
    ip_update bigint COMMENT '最后更新ip',
    agent_update string COMMENT '最后更新身板信息',
    device_create string COMMENT '创建设备uuid',
@@ -128,7 +129,7 @@ stored as textfile;
 ## 第一次装载脚本
 
 ```
-TRUNCATE user_manager_platform_test.czysp_user_dwd_user_agent_log;
+TRUNCATE czysp_user_dwd_user_agent_log;
 
 insert into czysp_user_dwd_user_agent_log
 select 
@@ -138,6 +139,7 @@ select
    ip_create,
    agent_create,
    from_unixtime(time_update),
+   da.sequence_id as time_update_sk,
    ip_update,
    agent_update,
    device_create,
@@ -145,6 +147,8 @@ select
    t1.time_entry,
    1
 from czysp_user_ods_user_agent_log t1
+left join dim_date da
+on from_unixtime(t1.time_update,'yyyy-MM-dd') = da.datestr
 	cross join (select coalesce(max(transaction_sk),0) sk_max from 
                czysp_user_dwd_user_agent_log) t2;
 ```

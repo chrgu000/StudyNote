@@ -32,22 +32,28 @@ select
   register.total as registertotal,
   install.total as installtotal,
   login.total as logintotal,
-  ' ' as avertotal
+  da.total/login.total as avertotal
 from   
 ( select '1' as id, count(1) as total  from  czysp_user_ods_user)  register
 left join
 (
  select '1' as id, count(1) as total from(
-        select  device_update as total from czysp_user_ods_user_agent_log group by device_update
+        select  device_update as total from czysp_user_dwd_user_agent_log group by device_update
         ) t
   
 ) install
 on register.id = install.id
 left join
 (
-  select '1' as id,  count(1) as total from czy_single_ods_xcws_login_log group by account
+  select '1' as id,  count(DISTINCT account) as total from czy_single_ods_xcws_login_log 
 ) login
-on install.id = login.id;
+on install.id = login.id
+left join
+(
+  select '1' as id, count(DISTINCT time_update_sk) as total from czysp_user_dwd_user_agent_log 
+  WHERE time_update_sk IS NOT NULL 
+) da
+on login.id = da.id;
 
 ```
 
@@ -105,7 +111,7 @@ INVALIDATE METADATA view_summ_branch_register;
 
 # 各模块访问人数
 
-# SQL
+## SQL
 
 ```
 DROP VIEW  view_summ_branch_module;
@@ -134,4 +140,49 @@ czysp_application_ods_application_open open
 group by open.table_pre
 ) open
 on app.table_pre = open.table_pre;
+```
+
+# 各分区县市局三级机构推广情况表
+
+## 分析
+
+```
+br.name
+st.register_num
+st.download_num
+
+dim_changsha_threelevel  th                   org_uuid
+czy_qrcode_ods_czy_code co                  community_uuid 
+                                            code
+czysp_user_ods_qrcode_statistical st        source_uuid
+```
+
+## SQL
+
+```
+
+DROP VIEW  view_summ_three_extend;
+
+Create View IF NOT EXISTS view_summ_three_extend as 
+
+select
+    row_number() over (order by t.register_num) as sorted,
+    t.*
+from
+(
+    select
+        th.org_uuid,
+        th.name,
+        st.register_num,
+        st.target_num
+    from dim_changsha_threelevel  th
+    left join czy_qrcode_ods_czy_code co 
+    on th.org_uuid = co.community_uuid
+    left join czysp_user_ods_qrcode_statistical st
+    on co.code = st.source_uuid
+    ORDER BY st.register_num LIMIT 10
+) t;
+
+INVALIDATE METADATA view_summ_three_extend;
+
 ```
